@@ -6,11 +6,12 @@ package frc.robot.Subsystems;
 
 import java.util.ArrayList;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,10 +30,6 @@ import frc.robot.Localization.ForkliftOdometry;
 
 public class DriveSubsystem extends SubsystemBase {
 
-  private final Encoder leftFrontEncoder = new Encoder(Constants.Drive.leftFrontEncoderPorts[0], Constants.Drive.leftFrontEncoderPorts[1], Constants.Drive.leftFrontEncoderReversed);
-    private final Encoder rightFrontEncoder = new Encoder(Constants.Drive.leftFrontEncoderPorts[0], Constants.Drive.rightFrontEncoderPorts[1], Constants.Drive.rightFrontEncoderReversed);
-    private final Encoder leftBackEncoder = new Encoder(Constants.Drive.leftBackEncoderPorts[0], Constants.Drive.leftBackEncoderPorts[1], Constants.Drive.leftBackEncoderReversed);
-    private final Encoder rightBackEncoder = new Encoder(Constants.Drive.leftBackEncoderPorts[0], Constants.Drive.leftBackEncoderPorts[1], Constants.Drive.rightBackEncoderReversed);
 
 
  
@@ -73,21 +70,21 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Creates a new Drive. */
   public DriveSubsystem() {
+    frontRight.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10);
+    frontRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+
+    frontLeft.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10);
+    frontLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+
     navx.reset();
     navx.resetDisplacement();
     balancePID = new PIDController(kP, kI, kD);
-    odometry = new DifferentialDriveOdometry(navx.getRotation2d(), leftFrontEncoder.getDistance(), rightFrontEncoder.getDistance());
+    odometry = new DifferentialDriveOdometry(navx.getRotation2d(), frontLeft.getSelectedSensorPosition(), frontRight.getSelectedSensorPosition());
         forkliftOdometry = new ForkliftOdometry(Constants.Drive.kTrackwidthMeters,
                 Constants.Drive.kLongitudinalDistance,
-                leftFrontEncoder,
-                rightFrontEncoder,
-                leftBackEncoder,
-                rightBackEncoder
+                frontLeft,
+                frontRight
                 );
-        leftFrontEncoder.setDistancePerPulse(Constants.Drive.tractionWheelDistancePerPulse);
-        rightFrontEncoder.setDistancePerPulse(Constants.Drive.tractionWheelDistancePerPulse);
-        leftBackEncoder.setDistancePerPulse(Constants.Drive.mecanumDistancePerPulse);
-        rightBackEncoder.setDistancePerPulse(Constants.Drive.mecanumDistancePerPulse);
   }
 
   public static DriveSubsystem getInstance() {
@@ -112,14 +109,12 @@ public Pose2d getPoseFromOdometry() {
 }
 
 public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-  return new DifferentialDriveWheelSpeeds(leftFrontEncoder.getRate(), rightFrontEncoder.getRate());
+  return new DifferentialDriveWheelSpeeds(frontLeft.getSelectedSensorVelocity(), frontRight.getSelectedSensorVelocity());
 }
 
 public void resetEncoders() {
-  leftFrontEncoder.reset();
-  rightFrontEncoder.reset();
-  leftBackEncoder.reset();
-  rightBackEncoder.reset();
+  frontLeft.setSelectedSensorPosition(0);
+  frontRight.setSelectedSensorPosition(0);
 }
 
 public void tankDriveVolts(double leftVolts, double rightVolts) {
@@ -129,7 +124,7 @@ public void tankDriveVolts(double leftVolts, double rightVolts) {
 }
 public void resetOdometry(Pose2d pose) {
   resetEncoders();
-  odometry.resetPosition(navx.getRotation2d(), leftFrontEncoder.getDistance(), rightFrontEncoder.getDistance(), pose);
+  odometry.resetPosition(navx.getRotation2d(), frontLeft.getSelectedSensorPosition(), frontRight.getSelectedSensorPosition(), pose);
 }
 public void resetNavX(Pose2d pose) {
   navxResetOffsetX = pose.getX();
@@ -138,7 +133,7 @@ public void resetNavX(Pose2d pose) {
   resetEncoders(); //in case that affects the getRate() function of the encoders
 }
 public double getAverageEncoderDistance() {
-  return (leftFrontEncoder.getDistance() + rightFrontEncoder.getDistance()) / 2.0;
+  return (frontLeft.getSelectedSensorPosition() + frontRight.getSelectedSensorPosition()) / 2.0;
 }
 
 public void toggleBalancePID() {
