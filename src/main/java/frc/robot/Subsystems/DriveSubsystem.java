@@ -6,6 +6,8 @@ package frc.robot.Subsystems;
 
 import java.util.ArrayList;
 
+import javax.lang.model.util.ElementScanner14;
+
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
@@ -56,9 +58,9 @@ public class DriveSubsystem extends SubsystemBase {
     ForkliftOdometry forkliftOdometry;
 
     private boolean BALANCING = false;
-    private final double kP = 0.1;
+    private final double kP = 0.0525;
     private final double kI = 0;
-    private final double kD = 0.01;
+    private final double kD = 0.005;
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
     private double calculatedPower = 0;
@@ -70,6 +72,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Creates a new Drive. */
   public DriveSubsystem() {
+
+    right.setInverted(true);
     frontRight.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10);
     frontRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
 
@@ -104,7 +108,6 @@ public Pose2d getPoseFromNavX() {
 
 public Pose2d getPoseFromOdometry() {
   Pose2d pose = forkliftOdometry.calculate();
-  SmartDashboard.putNumberArray("Forklift Odometry Pose", new double[] {pose.getX(), getPoseFromOdometry().getY(), pose.getRotation().getDegrees()});
   return pose;
 }
 
@@ -144,18 +147,19 @@ public void toggleBalancePID() {
     if (!BALANCING) {
       drive.tankDrive(leftValue, rightValue);
   } else {
-      calculatedPower = balancePID.calculate(navx.getPitch(), gyroSetpointAngle);
+      calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
       drive.tankDrive(calculatedPower, calculatedPower);
   }
   }
 
   private TrajectoryConfig config = new TrajectoryConfig(Constants.Drive.kMaxSpeedMetersPerSecond, Constants.Drive.kMaxAccelerationMetersPerSecondSquared).setKinematics(Constants.Drive.kDriveKinematics).addConstraint(Constants.Drive.voltageConstraint);
   private Pose2d startPose = new Pose2d();
-  public Trajectory startTrajectory =
-          edu.wpi.first.math.trajectory.TrajectoryGenerator.generateTrajectory(startPose, new ArrayList<Translation2d>(), new Pose2d(), config);
+  //public Trajectory startTrajectory =
+  //        edu.wpi.first.math.trajectory.TrajectoryGenerator.generateTrajectory(startPose, new ArrayList<Translation2d>(), new Pose2d(), config);
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Left Velocity", frontLeft.getSelectedSensorVelocity());
     getPoseFromOdometry();
     // This method will be called once per scheduler run
   }

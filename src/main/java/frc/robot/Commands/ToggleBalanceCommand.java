@@ -16,7 +16,6 @@ public class ToggleBalanceCommand extends CommandBase {
     this.subsystem = DriveSubsystem.getInstance();
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(subsystem);
-        subsystem.setDefaultCommand(this);
   }
 
   // Called when the command is initially scheduled.
@@ -34,6 +33,6 @@ public class ToggleBalanceCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return true;
   }
 }

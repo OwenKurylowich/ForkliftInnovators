@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Commands.DriveCommand;
@@ -17,12 +18,12 @@ import frc.robot.Subsystems.DriveSubsystem;
 public class RobotContainer {
 
   private final Joystick leftJoystick = new Joystick(0);
-  private final Joystick righJoystick = new Joystick(1);
+  private final Joystick rightJoystick = new Joystick(1);
 
   private final Joystick controller = new Joystick(2);
 
   private final DriveSubsystem driveSubsystem = DriveSubsystem.getInstance();
-    private final DriveCommand driveCommand = new DriveCommand(leftJoystick.getRawAxis(1), righJoystick.getRawAxis(1));
+    private final DriveCommand driveCommand = new DriveCommand(leftJoystick, rightJoystick);
     private final ToggleBalanceCommand toggleBalance = new ToggleBalanceCommand();
 
     private final JoystickButton balanceButton = new JoystickButton(controller, 2);
@@ -30,6 +31,8 @@ public class RobotContainer {
 
   public RobotContainer() {
     configureBindings();
+
+    CommandScheduler.getInstance().setDefaultCommand(driveSubsystem, driveCommand);
   }
 
   private void configureBindings() {

@@ -4,6 +4,8 @@
 
 package frc.robot.Localization;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Encoder;
@@ -14,10 +16,8 @@ public class ForkliftOdometry {
     private Pose2d pose;
     private double trackWidth;
     private double longitudinalDist;
-    private Encoder leftFrontEncoder;
-    private Encoder rightFrontEncoder;
-    private Encoder leftBackEncoder;
-    private Encoder rightBackEncoder;
+    private WPI_TalonSRX frontLeft;
+    private WPI_TalonSRX frontRight;
     private double prevRightFront = 0;
     private double prevLeftFront = 0;
     private double prevRightBack = 0;
@@ -30,50 +30,37 @@ public class ForkliftOdometry {
     private Mode mode = Mode.NO_GYRO;
     public ForkliftOdometry(Pose2d pose, double trackWidth,
                             double longitudinalDist,
-                            Encoder leftFrontEncoder,
-                            Encoder rightFrontEncoder,
-                            Encoder leftBackEncoder,
-                            Encoder rightBackEncoder
+                            WPI_TalonSRX frontLeft,
+                            WPI_TalonSRX frontRight
                             ) {
         this.pose = pose;
         this.trackWidth = trackWidth;
         this.longitudinalDist = longitudinalDist;
-        this.leftFrontEncoder = leftFrontEncoder;
-        this.leftFrontEncoder.reset();
-        this.rightFrontEncoder = rightFrontEncoder;
-        this.rightFrontEncoder.reset();
-        this.leftBackEncoder = leftBackEncoder;
-        this.leftBackEncoder.reset();
-        this.rightBackEncoder = rightBackEncoder;
-        this.rightBackEncoder.reset();
+        this.frontLeft = frontLeft;
+        this.frontLeft.setSelectedSensorPosition(0);
+        this.frontRight = frontRight;
+        this.frontRight.setSelectedSensorPosition(0);
     }
-    public ForkliftOdometry(double trackWidth, double longitudinalDist, Encoder leftFrontEncoder,
-                            Encoder rightFrontEncoder, Encoder leftBackEncoder, Encoder rightBackEncoder) {
-        this(new Pose2d(), trackWidth, longitudinalDist, leftFrontEncoder, rightFrontEncoder, leftBackEncoder, rightBackEncoder);
+    public ForkliftOdometry(double trackWidth, double longitudinalDist, WPI_TalonSRX frontLeft, WPI_TalonSRX frontRight) {
+        this(new Pose2d(), trackWidth, longitudinalDist, frontLeft, frontRight);
     }
     public void setMode(Mode mode) {
         this.mode = mode;
     }
     public Pose2d calculate() {
-        double rfEncoder = rightFrontEncoder.getDistance();
-        double lfEncoder = leftFrontEncoder.getDistance();
-        double rbEncoder = rightBackEncoder.getDistance();
-        double lbEncoder = leftBackEncoder.getDistance();
+        double rfEncoder = frontLeft.getSelectedSensorPosition();
+        double lfEncoder = frontRight.getSelectedSensorPosition();
         double deltaRightFrontEncoder = rfEncoder - prevRightFront;
         double deltaLeftFrontEncoder = lfEncoder - prevLeftFront;
-        double deltaRightBackEncoder = rbEncoder - prevRightBack;
-        double deltaLeftBackEncoder = lbEncoder - prevLeftBack;
         prevRightFront = rfEncoder;
         prevLeftFront = lfEncoder;
-        prevRightBack = rbEncoder;
-        prevLeftBack = lbEncoder;
-        double rightSide = deltaRightFrontEncoder + deltaRightBackEncoder;
-        double leftSide = deltaLeftFrontEncoder + deltaLeftBackEncoder;
-        double back = Constants.Drive.backDistancePerPulse / Constants.Drive.mecanumDistancePerPulse * (deltaLeftBackEncoder + deltaRightBackEncoder);
+        double rightSide = deltaRightFrontEncoder;
+        double leftSide = deltaLeftFrontEncoder;
         double dDriveHeading = (rightSide - leftSide) / trackWidth;
         double radius = rightSide / dDriveHeading - trackWidth / 2;
         double dxDrive = radius - radius * Math.cos(dDriveHeading);
         double dyDrive = radius + radius * Math.sin(dDriveHeading);
+        double back = Constants.Drive.backDistancePerPulse / Constants.Drive.mecanumDistancePerPulse * (deltaLeftFrontEncoder + deltaRightFrontEncoder);
         double dTurnHeading = back / longitudinalDist;
         double dxTurn = longitudinalDist * Math.sin(dTurnHeading);
         double dyTurn = longitudinalDist - longitudinalDist * Math.cos(dTurnHeading);
