@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import javax.lang.model.util.ElementScanner14;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -58,12 +60,13 @@ public class DriveSubsystem extends SubsystemBase {
     ForkliftOdometry forkliftOdometry;
 
     private boolean BALANCING = false;
-    private final double kP = 0.0525;
-    private final double kI = 0;
-    private final double kD = 0.005;
+    private final double kP = 0.0325;
+    private final double kI = 0.014;
+    private final double kD = 0.011;
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
     private double calculatedPower = 0;
+    private double balanceTime = 0;
 
 
 
@@ -141,6 +144,7 @@ public double getAverageEncoderDistance() {
 
 public void toggleBalancePID() {
   BALANCING = (BALANCING == false);
+  balanceTime = 0;
 }
 
   public void drive(double leftValue, double rightValue){
@@ -149,6 +153,20 @@ public void toggleBalancePID() {
   } else {
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
       drive.tankDrive(calculatedPower, calculatedPower);
+      if (navx.getPitch()<2 && navx.getPitch()>-2)
+      {
+        balanceTime+=0.025;
+        if(balanceTime>=3){
+          BALANCING = false;
+          frontLeft.setNeutralMode(NeutralMode.Brake);
+          backLeft.setNeutralMode(NeutralMode.Brake);
+          frontRight.setNeutralMode(NeutralMode.Brake);
+          backRight.setNeutralMode(NeutralMode.Brake);
+        }
+      }
+      else{
+        balanceTime = 0;
+      }
   }
   }
 
@@ -160,6 +178,8 @@ public void toggleBalancePID() {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Left Velocity", frontLeft.getSelectedSensorVelocity());
+    SmartDashboard.putNumber("IMU Pitch",navx.getPitch());
+    SmartDashboard.putBoolean("Balancing", BALANCING);
     getPoseFromOdometry();
     // This method will be called once per scheduler run
   }
