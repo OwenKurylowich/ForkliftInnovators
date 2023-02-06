@@ -15,6 +15,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.controller.RamseteController;
@@ -60,13 +61,14 @@ public class DriveSubsystem extends SubsystemBase {
     ForkliftOdometry forkliftOdometry;
 
     private boolean BALANCING = false;
-    private final double kP = 0.0325;
-    private final double kI = 0.014;
-    private final double kD = 0.011;
+    private final double kP = 0.05;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
+    private final double kI = 0.0;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
+    private final double kD = 0.05;   // 0.011 for normal and extra wweight, 
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
     private double calculatedPower = 0;
     private double balanceTime = 0;
+    private boolean brakeMode = false;
 
 
 
@@ -82,6 +84,11 @@ public class DriveSubsystem extends SubsystemBase {
 
     frontLeft.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10);
     frontLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+
+    frontLeft.setNeutralMode(NeutralMode.Coast);
+    backLeft.setNeutralMode(NeutralMode.Coast);
+    frontRight.setNeutralMode(NeutralMode.Coast);
+    backRight.setNeutralMode(NeutralMode.Coast);
 
     navx.reset();
     navx.resetDisplacement();
@@ -147,17 +154,36 @@ public void toggleBalancePID() {
   balanceTime = 0;
 }
 
+public void toggleBrakeMode(){
+  brakeMode = (brakeMode == false);
+  if (brakeMode){
+    frontLeft.setNeutralMode(NeutralMode.Brake);
+    backLeft.setNeutralMode(NeutralMode.Brake);
+    frontRight.setNeutralMode(NeutralMode.Brake);
+    backRight.setNeutralMode(NeutralMode.Brake);
+  }
+  else{
+    frontLeft.setNeutralMode(NeutralMode.Coast);
+    backLeft.setNeutralMode(NeutralMode.Coast);
+    frontRight.setNeutralMode(NeutralMode.Coast);
+    backRight.setNeutralMode(NeutralMode.Coast);
+  }
+}
+
   public void drive(double leftValue, double rightValue){
     if (!BALANCING) {
       drive.tankDrive(leftValue, rightValue);
   } else {
+      double batteryVolts = RobotController.getBatteryVoltage();
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
+    
       drive.tankDrive(calculatedPower, calculatedPower);
       if (navx.getPitch()<2 && navx.getPitch()>-2)
       {
         balanceTime+=0.025;
         if(balanceTime>=3){
           BALANCING = false;
+          brakeMode = true;
           frontLeft.setNeutralMode(NeutralMode.Brake);
           backLeft.setNeutralMode(NeutralMode.Brake);
           frontRight.setNeutralMode(NeutralMode.Brake);
@@ -180,6 +206,7 @@ public void toggleBalancePID() {
     SmartDashboard.putNumber("Left Velocity", frontLeft.getSelectedSensorVelocity());
     SmartDashboard.putNumber("IMU Pitch",navx.getPitch());
     SmartDashboard.putBoolean("Balancing", BALANCING);
+    SmartDashboard.putBoolean("Brake Mode", brakeMode);
     getPoseFromOdometry();
     // This method will be called once per scheduler run
   }

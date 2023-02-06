@@ -5,11 +5,15 @@
 package frc.robot.Commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Subsystems.DriveSubsystem;
 
 public class ToggleBrakeCommand extends CommandBase {
   /** Creates a new ToggleBrakeCommand. */
+  private final DriveSubsystem subsystem;
   public ToggleBrakeCommand() {
+    this.subsystem = DriveSubsystem.getInstance();
     // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(subsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -18,7 +22,7 @@ public class ToggleBrakeCommand extends CommandBase {
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {subsystem.toggleBrakeMode();}
 
   // Called once the command ends or is interrupted.
   @Override
@@ -27,6 +31,6 @@ public class ToggleBrakeCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return true;
   }
 }
