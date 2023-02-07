@@ -153,10 +153,8 @@ public void toggleBalancePID() {
   BALANCING = (BALANCING == false);
   balanceTime = 0;
 }
-
-public void toggleBrakeMode(){
-  brakeMode = (brakeMode == false);
-  if (brakeMode){
+public void brakeMode(boolean in){
+  if (in){
     frontLeft.setNeutralMode(NeutralMode.Brake);
     backLeft.setNeutralMode(NeutralMode.Brake);
     frontRight.setNeutralMode(NeutralMode.Brake);
@@ -168,6 +166,10 @@ public void toggleBrakeMode(){
     frontRight.setNeutralMode(NeutralMode.Coast);
     backRight.setNeutralMode(NeutralMode.Coast);
   }
+}
+
+public void toggleBrakeMode(){
+  brakeMode(brakeMode == false);
 }
 
   public void drive(double leftValue, double rightValue){
@@ -183,11 +185,7 @@ public void toggleBrakeMode(){
         balanceTime+=0.025;
         if(balanceTime>=3){
           BALANCING = false;
-          brakeMode = true;
-          frontLeft.setNeutralMode(NeutralMode.Brake);
-          backLeft.setNeutralMode(NeutralMode.Brake);
-          frontRight.setNeutralMode(NeutralMode.Brake);
-          backRight.setNeutralMode(NeutralMode.Brake);
+          brakeMode(true);
         }
       }
       else{
