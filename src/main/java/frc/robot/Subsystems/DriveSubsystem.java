@@ -168,6 +168,8 @@ public void brakeMode(boolean in){
   }
 }
 
+public void turn90(){}
+
 public void toggleBrakeMode(){
   brakeMode(brakeMode == false);
 }
@@ -180,17 +182,22 @@ public void toggleBrakeMode(){
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
     
       drive.tankDrive(calculatedPower, calculatedPower);
-      if (navx.getPitch()<2 && navx.getPitch()>-2)
-      {
-        balanceTime+=0.025;
-        if(balanceTime>=3){
-          BALANCING = false;
+      if (navx.getPitch()<8 && navx.getPitch()>-8){
           brakeMode(true);
-        }
+          drive.tankDrive(0, 0);
       }
-      else{
-        balanceTime = 0;
-      }
+
+      // if (navx.getPitch()<2 && navx.getPitch()>-2)
+      // {
+      //   balanceTime+=0.025;
+      //   if(balanceTime>=3){
+      //     BALANCING = false;
+      //     brakeMode(true);
+      //   }
+      // }
+      // else{
+      //   balanceTime = 0;
+      // }
   }
   }
 
