@@ -181,11 +181,12 @@ public void toggleBrakeMode(){
       double batteryVolts = RobotController.getBatteryVoltage();
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
     
-      drive.tankDrive(calculatedPower, calculatedPower);
+      
       if (navx.getPitch()<8 && navx.getPitch()>-8){
           brakeMode(true);
           drive.tankDrive(0, 0);
       }
+      else{drive.tankDrive(calculatedPower, calculatedPower);}
 
       // if (navx.getPitch()<2 && navx.getPitch()>-2)
       // {
