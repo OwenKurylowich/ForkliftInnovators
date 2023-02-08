@@ -69,6 +69,8 @@ public class DriveSubsystem extends SubsystemBase {
     private double calculatedPower = 0;
     private double balanceTime = 0;
     private boolean brakeMode = false;
+    private float prevPitch = 0;
+    private float pitchDifference = 0;
 
 
 
@@ -182,14 +184,14 @@ public void toggleBrakeMode(){
   } else {
       double batteryVolts = RobotController.getBatteryVoltage();
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
-    
+      pitchDifference = prevPitch-navx.getPitch();
       
-      if (navx.getPitch()<9 && navx.getPitch()>-9){
+      if ((navx.getPitch()<2 && navx.getPitch()>-2)||(pitchDifference > 1 || pitchDifference < -1)){
           brakeMode(true);
           drive.tankDrive(0, 0);
       }
       else{drive.tankDrive(calculatedPower, calculatedPower);}
-
+      prevPitch = navx.getPitch();
       // if (navx.getPitch()<2 && navx.getPitch()>-2)
       // {
       //   balanceTime+=0.025;
