@@ -156,28 +156,19 @@ public void toggleBalancePID() {
   BALANCING = (BALANCING == false);
   balanceTime = 0;
   startYaw = navx.getYaw();
-  endYaw = startYaw;
   if (BALANCING){
-    for (int i = 0; i <90;i++){
-      if(endYaw+1 > 180)
-        endYaw = -180;
-      else
-        endYaw++;
-    }
-    for (int i = 0; i <20;i++){
-      if(yawRightError +1 > 180)
-        yawRightError = -180;
-      else
-        yawRightError++;
-    }
-    for (int i = 0; i <20;i++){
-      if(yawLeftError -1 < -180)
-        yawLeftError = 180;
-      else
-        yawLeftError--;
+    endYaw = startYaw + 90;
+    if (endYaw > 180)
+      endYaw = ((endYaw-180)*2)-endYaw;
+    yawLeftError = startYaw - 20;
+    if(yawLeftError < -180)
+      yawLeftError = Math.abs(yawLeftError)-((-yawLeftError-180)*2);
+    yawRightError = startYaw + 20;
+    if (yawRightError > 180)
+      yawRightError = ((yawRightError-180)*2)-yawRightError;
     }
   }
-}
+
 public void brakeMode(boolean in){
   if (in){
     frontLeft.setNeutralMode(NeutralMode.Brake);
