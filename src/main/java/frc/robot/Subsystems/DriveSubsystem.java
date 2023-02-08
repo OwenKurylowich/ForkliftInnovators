@@ -228,7 +228,8 @@ public void toggleBrakeMode(){
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Left Velocity", frontLeft.getSelectedSensorVelocity());
-    SmartDashboard.putNumber("IMU Pitch",navx.getPitch());
+    SmartDashboard.putNumber("NavX Pitch",navx.getPitch());
+    SmartDashboard.putNumber("NavX Yaw", navx.getYaw());
     SmartDashboard.putBoolean("Balancing", BALANCING);
     SmartDashboard.putBoolean("Brake Mode", brakeMode);
     SmartDashboard.putNumber("Front Right Voltage",frontRight.getMotorOutputVoltage());
