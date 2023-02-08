@@ -63,7 +63,7 @@ public class DriveSubsystem extends SubsystemBase {
     private boolean BALANCING = false;
     private final double kP = 0.05;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
     private final double kI = 0.0;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
-    private final double kD = 0.05;   // 0.011 for normal and extra wweight, 
+    private final double kD = 0.06;   // 0.011 for normal and extra wweight, 
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
     private double calculatedPower = 0;
@@ -159,12 +159,14 @@ public void brakeMode(boolean in){
     backLeft.setNeutralMode(NeutralMode.Brake);
     frontRight.setNeutralMode(NeutralMode.Brake);
     backRight.setNeutralMode(NeutralMode.Brake);
+    brakeMode = true;
   }
   else{
     frontLeft.setNeutralMode(NeutralMode.Coast);
     backLeft.setNeutralMode(NeutralMode.Coast);
     frontRight.setNeutralMode(NeutralMode.Coast);
     backRight.setNeutralMode(NeutralMode.Coast);
+    brakeMode = false;
   }
 }
 
@@ -182,7 +184,7 @@ public void toggleBrakeMode(){
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
     
       
-      if (navx.getPitch()<8 && navx.getPitch()>-8){
+      if (navx.getPitch()<9 && navx.getPitch()>-9){
           brakeMode(true);
           drive.tankDrive(0, 0);
       }
@@ -213,6 +215,10 @@ public void toggleBrakeMode(){
     SmartDashboard.putNumber("IMU Pitch",navx.getPitch());
     SmartDashboard.putBoolean("Balancing", BALANCING);
     SmartDashboard.putBoolean("Brake Mode", brakeMode);
+    SmartDashboard.putNumber("Front Right Voltage",frontRight.getMotorOutputVoltage());
+    SmartDashboard.putNumber("Front Left Voltage",frontLeft.getMotorOutputVoltage());
+    SmartDashboard.putNumber("Back Right Motor",backRight.getMotorOutputVoltage());
+    SmartDashboard.putNumber("Back Left Motor",backLeft.getMotorOutputVoltage());
     getPoseFromOdometry();
     // This method will be called once per scheduler run
   }
