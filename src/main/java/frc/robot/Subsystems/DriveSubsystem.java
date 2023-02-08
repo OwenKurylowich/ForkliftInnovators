@@ -71,10 +71,9 @@ public class DriveSubsystem extends SubsystemBase {
     private boolean brakeMode = false;
     private float prevPitch = 0;
     private float pitchDifference = 0;
+    private float startYaw = 0;
+    private float endYaw = 0;
 
-
-
-  
 
 
   /** Creates a new Drive. */
@@ -154,6 +153,14 @@ public double getAverageEncoderDistance() {
 public void toggleBalancePID() {
   BALANCING = (BALANCING == false);
   balanceTime = 0;
+  startYaw = navx.getYaw();
+  endYaw = startYaw;
+  for (int i = 0; i <90;i++){
+    if(endYaw+1 > 180)
+      endYaw = -180;
+    else
+      endYaw++;
+  }
 }
 public void brakeMode(boolean in){
   if (in){
