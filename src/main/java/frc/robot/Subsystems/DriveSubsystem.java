@@ -73,6 +73,8 @@ public class DriveSubsystem extends SubsystemBase {
     private float pitchDifference = 0;
     private float startYaw = 0;
     private float endYaw = 0;
+    private float yawLeftError = 0;
+    private float yawRightError = 0;
 
 
 
@@ -155,11 +157,25 @@ public void toggleBalancePID() {
   balanceTime = 0;
   startYaw = navx.getYaw();
   endYaw = startYaw;
-  for (int i = 0; i <90;i++){
-    if(endYaw+1 > 180)
-      endYaw = -180;
-    else
-      endYaw++;
+  if (BALANCING){
+    for (int i = 0; i <90;i++){
+      if(endYaw+1 > 180)
+        endYaw = -180;
+      else
+        endYaw++;
+    }
+    for (int i = 0; i <20;i++){
+      if(yawRightError +1 > 180)
+        yawRightError = -180;
+      else
+        yawRightError++;
+    }
+    for (int i = 0; i <20;i++){
+      if(yawLeftError -1 < -180)
+        yawLeftError = 180;
+      else
+        yawLeftError--;
+    }
   }
 }
 public void brakeMode(boolean in){
