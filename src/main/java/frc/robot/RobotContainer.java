@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Commands.DriveCommand;
 import frc.robot.Commands.ToggleBalanceCommand;
 import frc.robot.Commands.ToggleBrakeCommand;
+import frc.robot.Commands.Turn180Command;
 import frc.robot.Subsystems.DriveSubsystem;
 
 public class RobotContainer {
@@ -25,9 +26,11 @@ public class RobotContainer {
     private final DriveCommand driveCommand = new DriveCommand(leftJoystick, rightJoystick);
     private final ToggleBalanceCommand toggleBalance = new ToggleBalanceCommand();
     private final ToggleBrakeCommand toggleBrake = new ToggleBrakeCommand();
+    private final Turn180Command turn180Command = new Turn180Command(driveSubsystem);
 
     private final JoystickButton balanceButton = new JoystickButton(rightJoystick, 2);
     private final JoystickButton brakeButton = new JoystickButton(rightJoystick, 1);
+    private final JoystickButton turnButton = new JoystickButton(leftJoystick, 2);
     
 
   public RobotContainer() {
@@ -39,6 +42,7 @@ public class RobotContainer {
   private void configureBindings() {
     balanceButton.toggleOnTrue(toggleBalance);
     brakeButton.toggleOnTrue(toggleBrake);
+    turnButton.toggleOnTrue(turn180Command);
   }
 
   public Command getAutonomousCommand() {

@@ -61,13 +61,19 @@ public class DriveSubsystem extends SubsystemBase {
     ForkliftOdometry forkliftOdometry;
 
     private boolean BALANCING = false;
-    private final double kP = 0.038;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
-    private final double kI = 0.0;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
-    private final double kD = 0.01;   // 0.011 for normal and extra wweight, 
+    private final double bkP = 0.038;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
+    private final double bkI = 0.0;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
+    private final double bkD = 0.01;   // 0.011 for normal and extra wweight, 
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
+    private final double tkP = 0.01;
+    private final double tkI = 0;
+    private final double tkD = 0.0;
+    private final PIDController turnPID;
     private double calculatedPower = 0;
+    private double turnCalc = 0;
     private double balanceTime = 0;
+    private double turnTime = 0;
     private boolean brakeMode = false;
     private float prevPitch = 0;
     private float pitchDifference = 0;
@@ -75,6 +81,7 @@ public class DriveSubsystem extends SubsystemBase {
     private float endYaw = 0;
     private float yawLeftError = 0;
     private float yawRightError = 0;
+    private boolean turnDone = false;
 
 
 
@@ -95,7 +102,9 @@ public class DriveSubsystem extends SubsystemBase {
 
     navx.reset();
     navx.resetDisplacement();
-    balancePID = new PIDController(kP, kI, kD);
+    balancePID = new PIDController(bkP, bkI, bkD);
+    turnPID = new PIDController(tkP, tkI, tkD);
+    turnPID.enableContinuousInput(-180, 180);
     odometry = new DifferentialDriveOdometry(navx.getRotation2d(), frontLeft.getSelectedSensorPosition(), frontRight.getSelectedSensorPosition());
         forkliftOdometry = new ForkliftOdometry(Constants.Drive.kTrackwidthMeters,
                 Constants.Drive.kLongitudinalDistance,
@@ -186,7 +195,34 @@ public void brakeMode(boolean in){
   }
 }
 
-public void turn90(){}
+public void turn180(){
+  
+  turnCalc = turnPID.calculate(navx.getYaw(), endYaw);
+  drive.tankDrive(turnCalc, -turnCalc);
+  if (navx.getYaw() < yawRightError && navx.getYaw() > yawLeftError)
+  {
+    turnTime+=0.025;
+        if(turnTime>=3)
+          turnDone = true;
+  }
+  else
+    turnTime = 0;
+  
+}
+
+public void turn180Init(){
+  endYaw = navx.getYaw()+180;
+  if (endYaw > 180)
+      endYaw = ((endYaw-180)*2)-endYaw;
+  yawLeftError = endYaw - 2;
+  if(yawLeftError < -180)
+    yawLeftError = Math.abs(yawLeftError)-((-yawLeftError-180)*2);
+  yawRightError = endYaw + 2;
+  if (yawRightError > 180)
+    yawRightError = ((yawRightError-180)*2)-yawRightError;
+  turnDone = false;
+}
+public boolean getTurnDone(){return turnDone;}
 
 public void toggleBrakeMode(){
   brakeMode(brakeMode == false);
