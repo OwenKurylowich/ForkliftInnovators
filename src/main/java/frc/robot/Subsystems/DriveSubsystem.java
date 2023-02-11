@@ -200,30 +200,22 @@ public void toggleBrakeMode(){
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
       pitchDifference = prevPitch-navx.getPitch();
       drive.tankDrive(calculatedPower, calculatedPower);
-      // if (pitchDifference > 1.75 || pitchDifference < -1.75 || (navx.getPitch() > -2 && navx.getPitch() < 2)){
-      //     brakeMode(true);
-      //     Timer.delay(0.5);
-      //     if (pitchDifference > 0.25 && pitchDifference < -0.25)
-      //       BALANCING = false;
-      // }
-      
       prevPitch = navx.getPitch();
-      // if (navx.getPitch()<2 && navx.getPitch()>-2)
-      // {
-      //   balanceTime+=0.025;
-      //   if(balanceTime>=3){
-      //     BALANCING = false;
-      //     brakeMode(true);
-      //   }
-      // }
-      // else{
-      //   balanceTime = 0;
-      // }
+      if (navx.getPitch()<2 && navx.getPitch()>-2)
+      {
+        balanceTime+=0.025;
+        if(balanceTime>=3){
+          BALANCING = false;
+          brakeMode(true);
+        }
+      }
+      else{
+        balanceTime = 0;
+      }
   }
   }
-//hehe
-  private TrajectoryConfig config = new TrajectoryConfig(Constants.Drive.kMaxSpeedMetersPerSecond, Constants.Drive.kMaxAccelerationMetersPerSecondSquared).setKinematics(Constants.Drive.kDriveKinematics).addConstraint(Constants.Drive.voltageConstraint);
-  private Pose2d startPose = new Pose2d();
+  //private TrajectoryConfig config = new TrajectoryConfig(Constants.Drive.kMaxSpeedMetersPerSecond, Constants.Drive.kMaxAccelerationMetersPerSecondSquared).setKinematics(Constants.Drive.kDriveKinematics).addConstraint(Constants.Drive.voltageConstraint);
+  //private Pose2d startPose = new Pose2d();
   //public Trajectory startTrajectory =
   //        edu.wpi.first.math.trajectory.TrajectoryGenerator.generateTrajectory(startPose, new ArrayList<Translation2d>(), new Pose2d(), config);
 
