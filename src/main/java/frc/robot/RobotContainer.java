@@ -28,7 +28,7 @@ public class RobotContainer {
     private final ToggleBalanceCommand toggleBalance = new ToggleBalanceCommand();
     private final ToggleBrakeCommand toggleBrake = new ToggleBrakeCommand();
 
-    private final JoystickButton balanceButton = new JoystickButton(controller, 2);
+    private final JoystickButton balanceButton = new JoystickButton(rightJoystick, 2);
     private final JoystickButton brakeButton = new JoystickButton(rightJoystick, 1);
     
 

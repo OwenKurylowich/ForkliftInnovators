@@ -61,9 +61,9 @@ public class DriveSubsystem extends SubsystemBase {
     ForkliftOdometry forkliftOdometry;
 
     private boolean BALANCING = false;
-    private final double kP = 0.0525;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
+    private final double kP = 0.038;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
     private final double kI = 0.0;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
-    private final double kD = 0.1;   // 0.011 for normal and extra wweight, 
+    private final double kD = 0.01;   // 0.011 for normal and extra wweight, 
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
     private double calculatedPower = 0;
@@ -199,14 +199,14 @@ public void toggleBrakeMode(){
       double batteryVolts = RobotController.getBatteryVoltage();
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
       pitchDifference = prevPitch-navx.getPitch();
-      
-      if (pitchDifference > 1.75 || pitchDifference < -1.75 || (navx.getPitch() > -2 && navx.getPitch() < 2)){
-          brakeMode(true);
-          Timer.delay(0.5);
-          if (pitchDifference > 0.25 && pitchDifference < -0.25)
-            BALANCING = false;
-      }
       drive.tankDrive(calculatedPower, calculatedPower);
+      // if (pitchDifference > 1.75 || pitchDifference < -1.75 || (navx.getPitch() > -2 && navx.getPitch() < 2)){
+      //     brakeMode(true);
+      //     Timer.delay(0.5);
+      //     if (pitchDifference > 0.25 && pitchDifference < -0.25)
+      //       BALANCING = false;
+      // }
+      
       prevPitch = navx.getPitch();
       // if (navx.getPitch()<2 && navx.getPitch()>-2)
       // {
