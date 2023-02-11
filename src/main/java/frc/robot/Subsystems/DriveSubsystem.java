@@ -104,6 +104,7 @@ public class DriveSubsystem extends SubsystemBase {
     navx.resetDisplacement();
     balancePID = new PIDController(bkP, bkI, bkD);
     turnPID = new PIDController(tkP, tkI, tkD);
+    turnPID.setTolerance(2);
     turnPID.enableContinuousInput(-180, 180);
     odometry = new DifferentialDriveOdometry(navx.getRotation2d(), frontLeft.getSelectedSensorPosition(), frontRight.getSelectedSensorPosition());
         forkliftOdometry = new ForkliftOdometry(Constants.Drive.kTrackwidthMeters,
