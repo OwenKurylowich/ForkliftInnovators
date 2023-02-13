@@ -91,7 +91,8 @@ public class DriveSubsystem extends SubsystemBase {
     navx.reset();
     navx.resetDisplacement();
     balancePID = new PIDController(bkP, bkI, bkD);
-    balancePID.setTolerance(2);
+    balancePID.setTolerance(2.0);
+    balancePID.enableContinuousInput(-180, 180);
     turnPID = new PIDController(tkP, tkI, tkD);
     turnPID.setTolerance(2);
     turnPID.enableContinuousInput(-180, 180);
@@ -215,7 +216,7 @@ public void toggleBrakeMode(){
   } else {
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
       drive.tankDrive(calculatedPower, calculatedPower);
-      if (balancePID.atSetpoint())
+      if (navx.getPitch() > -2 && navx.getPitch() < 2)
       {
         balanceTime+=0.025;
         if(balanceTime>=3){
@@ -239,6 +240,7 @@ public void toggleBrakeMode(){
     SmartDashboard.putNumber("NavX Yaw", navx.getYaw());
     SmartDashboard.putBoolean("Balancing", BALANCING);
     SmartDashboard.putBoolean("Brake Mode", brakeMode);
+    SmartDashboard.putBoolean("At Setpoint: ", balancePID.atSetpoint());
     getPoseFromOdometry();
     // This method will be called once per scheduler run
   }
