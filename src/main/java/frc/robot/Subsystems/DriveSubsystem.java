@@ -67,8 +67,8 @@ public class DriveSubsystem extends SubsystemBase {
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
     private final double tkP = 0.01;
-    private final double tkI = 0;
-    private final double tkD = 0.0;
+    private final double tkI = 0.01;
+    private final double tkD = 0.01;
     private final PIDController turnPID;
     private double calculatedPower = 0;
     private double turnCalc = 0;
@@ -199,16 +199,7 @@ public void brakeMode(boolean in){
 public void turn180(){
   
   turnCalc = turnPID.calculate(navx.getYaw(), endYaw);
-  drive.tankDrive(turnCalc, -turnCalc);
-  if (navx.getYaw() < yawRightError && navx.getYaw() > yawLeftError)
-  {
-    turnTime+=0.025;
-        if(turnTime>=3)
-          turnDone = true;
-  }
-  else
-    turnTime = 0;
-  
+  drive.tankDrive(-turnCalc, turnCalc);
 }
 
 public void turn180Init(){
@@ -222,8 +213,9 @@ public void turn180Init(){
   if (yawRightError > 180)
     yawRightError = ((yawRightError-180)*2)-yawRightError;
   turnDone = false;
+  turnPID.setSetpoint(endYaw);
 }
-public boolean getTurnDone(){return turnDone;}
+public boolean getTurnDone(){return turnPID.atSetpoint();}
 
 public void toggleBrakeMode(){
   brakeMode(brakeMode == false);
