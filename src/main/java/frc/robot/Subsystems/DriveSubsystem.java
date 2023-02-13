@@ -4,9 +4,6 @@
 
 package frc.robot.Subsystems;
 
-import java.util.ArrayList;
-
-import javax.lang.model.util.ElementScanner14;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -15,17 +12,12 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SerialPort;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -73,15 +65,11 @@ public class DriveSubsystem extends SubsystemBase {
     private double calculatedPower = 0;
     private double turnCalc = 0;
     private double balanceTime = 0;
-    private double turnTime = 0;
     private boolean brakeMode = false;
-    private float prevPitch = 0;
-    private float pitchDifference = 0;
     private float startYaw = 0;
     private float endYaw = 0;
     private float yawLeftError = 0;
     private float yawRightError = 0;
-    private boolean turnDone = false;
 
 
 
@@ -103,6 +91,7 @@ public class DriveSubsystem extends SubsystemBase {
     navx.reset();
     navx.resetDisplacement();
     balancePID = new PIDController(bkP, bkI, bkD);
+    balancePID.setTolerance(2);
     turnPID = new PIDController(tkP, tkI, tkD);
     turnPID.setTolerance(2);
     turnPID.enableContinuousInput(-180, 180);
@@ -212,7 +201,6 @@ public void turn180Init(){
   yawRightError = endYaw + 2;
   if (yawRightError > 180)
     yawRightError = ((yawRightError-180)*2)-yawRightError;
-  turnDone = false;
   turnPID.setSetpoint(endYaw);
 }
 public boolean getTurnDone(){return turnPID.atSetpoint();}
@@ -225,12 +213,9 @@ public void toggleBrakeMode(){
     if (!BALANCING) {
       drive.tankDrive(leftValue, rightValue);
   } else {
-      double batteryVolts = RobotController.getBatteryVoltage();
       calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
-      pitchDifference = prevPitch-navx.getPitch();
       drive.tankDrive(calculatedPower, calculatedPower);
-      prevPitch = navx.getPitch();
-      if (navx.getPitch()<2 && navx.getPitch()>-2)
+      if (balancePID.atSetpoint())
       {
         balanceTime+=0.025;
         if(balanceTime>=3){
@@ -250,15 +235,10 @@ public void toggleBrakeMode(){
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Left Velocity", frontLeft.getSelectedSensorVelocity());
     SmartDashboard.putNumber("NavX Pitch",navx.getPitch());
     SmartDashboard.putNumber("NavX Yaw", navx.getYaw());
     SmartDashboard.putBoolean("Balancing", BALANCING);
     SmartDashboard.putBoolean("Brake Mode", brakeMode);
-    SmartDashboard.putNumber("Front Right Voltage",frontRight.getMotorOutputVoltage());
-    SmartDashboard.putNumber("Front Left Voltage",frontLeft.getMotorOutputVoltage());
-    SmartDashboard.putNumber("Back Right Motor",backRight.getMotorOutputVoltage());
-    SmartDashboard.putNumber("Back Left Motor",backLeft.getMotorOutputVoltage());
     getPoseFromOdometry();
     // This method will be called once per scheduler run
   }
