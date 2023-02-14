@@ -17,6 +17,8 @@ public class Constants {
 
     public static final double deadZoneDefault = 0.1;
 
+    public static double encoderPositionPerFoot = 13500;
+
     public static class Drive {
         public static final double tractionWheelDistancePerPulse = 2; //I'm not sure it that is meters or cm
         public static final double mecanumDistancePerPulse = 0.7071 * tractionWheelDistancePerPulse;

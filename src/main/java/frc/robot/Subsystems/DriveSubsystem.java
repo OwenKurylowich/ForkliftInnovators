@@ -62,6 +62,10 @@ public class DriveSubsystem extends SubsystemBase {
     private final double tkI = 0.01;
     private final double tkD = 0.01;
     private final PIDController turnPID;
+    private final double akP = 0.1;
+    private final double akI = 0.0;
+    private final double akD = 0.01;
+    private final PIDController autoDrivePID;
     private double calculatedPower = 0;
     private double turnCalc = 0;
     private double balanceTime = 0;
@@ -96,6 +100,8 @@ public class DriveSubsystem extends SubsystemBase {
     turnPID = new PIDController(tkP, tkI, tkD);
     turnPID.setTolerance(2);
     turnPID.enableContinuousInput(-180, 180);
+    autoDrivePID = new PIDController(akP, akI, akD);
+    autoDrivePID.setTolerance(150);
     odometry = new DifferentialDriveOdometry(navx.getRotation2d(), frontLeft.getSelectedSensorPosition(), frontRight.getSelectedSensorPosition());
         forkliftOdometry = new ForkliftOdometry(Constants.Drive.kTrackwidthMeters,
                 Constants.Drive.kLongitudinalDistance,
@@ -210,6 +216,15 @@ public void toggleBrakeMode(){
   brakeMode(brakeMode == false);
 }
 
+public boolean autoDrive(double ft){
+  boolean done = false;
+  autoDrivePID.setSetpoint(-ft * Constants.encoderPositionPerFoot);
+  double autoCalc = autoDrivePID.calculate(frontRight.getSelectedSensorPosition(),ft * Constants.encoderPositionPerFoot);
+  drive.tankDrive(autoCalc,autoCalc);
+  if(autoDrivePID.atSetpoint()){return false;}
+  return true;
+}
+
   public void drive(double leftValue, double rightValue){
     if (!BALANCING) {
       drive.tankDrive(leftValue, rightValue);
@@ -241,6 +256,8 @@ public void toggleBrakeMode(){
     SmartDashboard.putBoolean("Balancing", BALANCING);
     SmartDashboard.putBoolean("Brake Mode", brakeMode);
     SmartDashboard.putBoolean("At Setpoint: ", balancePID.atSetpoint());
+    SmartDashboard.putNumber("Left Position", frontLeft.getSelectedSensorPosition()*-2);
+    SmartDashboard.putNumber("Right Position", frontRight.getSelectedSensorPosition());
     getPoseFromOdometry();
     // This method will be called once per scheduler run
   }
