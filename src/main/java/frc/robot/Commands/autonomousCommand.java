@@ -20,13 +20,15 @@ public class autonomousCommand extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {subsystem.brakeMode(true);}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     subsystem.resetEncoders();
-    while(subsystem.autoDrive(1)){}
+    while(subsystem.autoDrive(4)){}
+    subsystem.toggleBalancePID();
+    while(subsystem.autoBal()){}
     done = true;
   }
 

@@ -58,13 +58,15 @@ public class DriveSubsystem extends SubsystemBase {
     private final double bkD = 0.01;   // 0.011 for normal and extra wweight, 
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
+
     private final double tkP = 0.01;
     private final double tkI = 0.01;
     private final double tkD = 0.01;
     private final PIDController turnPID;
-    private final double akP = 0.1;
+
+    private final double akP = 0.01;
     private final double akI = 0.0;
-    private final double akD = 0.01;
+    private final double akD = 0.05;
     private final PIDController autoDrivePID;
     private double calculatedPower = 0;
     private double turnCalc = 0;
@@ -101,7 +103,7 @@ public class DriveSubsystem extends SubsystemBase {
     turnPID.setTolerance(2);
     turnPID.enableContinuousInput(-180, 180);
     autoDrivePID = new PIDController(akP, akI, akD);
-    autoDrivePID.setTolerance(150);
+    autoDrivePID.setTolerance(350);
     odometry = new DifferentialDriveOdometry(navx.getRotation2d(), frontLeft.getSelectedSensorPosition(), frontRight.getSelectedSensorPosition());
         forkliftOdometry = new ForkliftOdometry(Constants.Drive.kTrackwidthMeters,
                 Constants.Drive.kLongitudinalDistance,
@@ -218,13 +220,27 @@ public void toggleBrakeMode(){
 
 public boolean autoDrive(double ft){
   boolean done = false;
-  autoDrivePID.setSetpoint(-ft * Constants.encoderPositionPerFoot);
+  autoDrivePID.setSetpoint(ft * Constants.encoderPositionPerFoot);
   double autoCalc = autoDrivePID.calculate(frontRight.getSelectedSensorPosition(),ft * Constants.encoderPositionPerFoot);
-  drive.tankDrive(autoCalc,autoCalc);
+  drive.tankDrive(-autoCalc,-autoCalc);
   if(autoDrivePID.atSetpoint()){return false;}
   return true;
 }
 
+public boolean autoBal(){
+  calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
+    drive.tankDrive(calculatedPower, calculatedPower);
+    if (navx.getPitch() > -2 && navx.getPitch() < 2){
+      balanceTime+=0.025;
+      if(balanceTime>=3){
+        return false;
+      }
+    }
+    else{
+      balanceTime = 0;
+    }
+    return true;
+}
   public void drive(double leftValue, double rightValue){
     if (!BALANCING) {
       drive.tankDrive(leftValue, rightValue);
