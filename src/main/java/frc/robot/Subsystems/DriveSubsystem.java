@@ -54,19 +54,20 @@ public class DriveSubsystem extends SubsystemBase {
 
     private boolean BALANCING = false;
     private final double bkP = 0.038;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
-    private final double bkI = 0.0;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
+    private final double bkI = 0.00002;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
     private final double bkD = 0.01;   // 0.011 for normal and extra wweight, 
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
 
-    private final double tkP = 0.01;
-    private final double tkI = 0.01;
-    private final double tkD = 0.01;
+    private final double tkP = 0.02;
+    private final double tkI = 0.0001;
+    private final double tkD = 0.1;
     private final PIDController turnPID;
+    private double turnTime = 0;
 
-    private final double akP = 0.01;
+    private final double akP = 0.006;
     private final double akI = 0.0;
-    private final double akD = 0.05;
+    private final double akD = 0.04;
     private final PIDController autoDrivePID;
     private double calculatedPower = 0;
     private double turnCalc = 0;
@@ -97,7 +98,8 @@ public class DriveSubsystem extends SubsystemBase {
     navx.reset();
     navx.resetDisplacement();
     balancePID = new PIDController(bkP, bkI, bkD);
-    balancePID.setTolerance(2.0);
+    balancePID.setSetpoint(gyroSetpointAngle);
+    balancePID.setTolerance(1.5);
     balancePID.enableContinuousInput(-180, 180);
     turnPID = new PIDController(tkP, tkI, tkD);
     turnPID.setTolerance(2);
@@ -118,6 +120,8 @@ public class DriveSubsystem extends SubsystemBase {
     }
     return instance;
 }
+
+public AHRS getNavx(){return navx;}
 
 public Pose2d getPoseFromNavX() {
   return new Pose2d(
@@ -195,9 +199,21 @@ public void brakeMode(boolean in){
 }
 
 public void turn180(){
-  
   turnCalc = turnPID.calculate(navx.getYaw(), endYaw);
   drive.tankDrive(-turnCalc, turnCalc);
+  
+}
+
+public boolean turnToPoint(float endpoint){
+  turnPID.setSetpoint(endpoint);
+  turnCalc = turnPID.calculate(navx.getYaw(), endpoint);
+  drive.tankDrive(-turnCalc, turnCalc);
+  if(turnPID.atSetpoint()){
+    turnTime+=0.025;
+    if(turnTime >= 3)
+      return false;
+  }
+  return true;
 }
 
 public void turn180Init(){
@@ -230,9 +246,9 @@ public boolean autoDrive(double ft){
 public boolean autoBal(){
   calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
     drive.tankDrive(calculatedPower, calculatedPower);
-    if (navx.getPitch() > -2 && navx.getPitch() < 2){
-      balanceTime+=0.025;
-      if(balanceTime>=3){
+    if (navx.getPitch() > -1.5 && navx.getPitch() < 1.5){
+      balanceTime+=0.02;
+      if(balanceTime>=5){
         return false;
       }
     }

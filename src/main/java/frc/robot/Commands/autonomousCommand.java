@@ -4,31 +4,51 @@
 
 package frc.robot.Commands;
 
+import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Subsystems.DriveSubsystem;
 
 public class autonomousCommand extends CommandBase {
   DriveSubsystem subsystem;
   private boolean autoDriveDone= false;
   private boolean done = false;
+  private AHRS navx;
+  private float startYaw = 0;
+  
+  private boolean firstDriveRun = true;
+   
   /** Creates a new autonomousCommand. */
   public autonomousCommand() {
     subsystem = DriveSubsystem.getInstance();
+    navx = subsystem.getNavx();
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {subsystem.brakeMode(true);}
+  public void initialize() {
+    subsystem.resetEncoders();
+    subsystem.brakeMode(true);
+    startYaw = navx.getYaw();
+    firstDriveRun = true;
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    subsystem.resetEncoders();
-    while(subsystem.autoDrive(4)){}
-    subsystem.toggleBalancePID();
-    while(subsystem.autoBal()){}
+    if(firstDriveRun){
+      while(subsystem.autoDrive(4)){} //drive 4 feet
+      firstDriveRun = false;
+    }
+    subsystem.drive(0.05,0.05);
+    Timer.delay(0.1);
+    subsystem.toggleBalancePID(); //toggle balance to set some variables for balance
+    while(subsystem.autoBal()){} //balance
+    Timer.delay(2);
+    while(subsystem.turnToPoint(startYaw)){} //rotate back to start angle
     done = true;
   }
 
