@@ -9,6 +9,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Subsystems.DriveSubsystem;
 
 public class autonomousCommand extends CommandBase {
@@ -19,6 +20,7 @@ public class autonomousCommand extends CommandBase {
   private float startYaw = 0;
   
   private boolean firstDriveRun = true;
+  private boolean firstStop = true;
    
   /** Creates a new autonomousCommand. */
   public autonomousCommand() {
@@ -34,17 +36,22 @@ public class autonomousCommand extends CommandBase {
     subsystem.brakeMode(true);
     startYaw = navx.getYaw();
     firstDriveRun = true;
+    firstStop = true;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    SmartDashboard.putNumber("NavX Pitch",navx.getPitch());
     if(firstDriveRun){
       while(subsystem.autoDrive(4)){} //drive 4 feet
       firstDriveRun = false;
     }
-    subsystem.drive(0.05,0.05);
-    Timer.delay(0.1);
+    if(firstStop){
+      subsystem.drive(0.05,0.05);
+      Timer.delay(0.1);
+      firstStop = false;
+    }
     subsystem.toggleBalancePID(); //toggle balance to set some variables for balance
     while(subsystem.autoBal()){} //balance
     Timer.delay(2);
