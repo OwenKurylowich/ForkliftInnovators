@@ -249,6 +249,7 @@ public boolean autoBal(){
     if (navx.getPitch() > -1 && navx.getPitch() < 1){
       balanceTime+=0.02;
       if(balanceTime>=5){
+        BALANCING = false;
         return false;
       }
     }

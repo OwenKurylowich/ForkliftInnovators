@@ -42,8 +42,7 @@ public class autonomousCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    SmartDashboard.putNumber("NavX Pitch",navx.getPitch());
-    if(firstDriveRun){
+        if(firstDriveRun){
       while(subsystem.autoDrive(4)){} //drive 4 feet
       firstDriveRun = false;
     }
@@ -53,9 +52,10 @@ public class autonomousCommand extends CommandBase {
       firstStop = false;
     }
     subsystem.toggleBalancePID(); //toggle balance to set some variables for balance
-    while(subsystem.autoBal()){} //balance
+    while(subsystem.autoBal()){SmartDashboard.putNumber("NavX Pitch",navx.getPitch());} //balance
     Timer.delay(2);
     while(subsystem.turnToPoint(startYaw)){} //rotate back to start angle
+    while(subsystem.autoBal()){SmartDashboard.putNumber("NavX Pitch",navx.getPitch());}//balance again
     done = true;
   }
 
