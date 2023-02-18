@@ -53,9 +53,9 @@ public class DriveSubsystem extends SubsystemBase {
     ForkliftOdometry forkliftOdometry;
 
     private boolean BALANCING = false;
-    private final double bkP = 0.038;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
-    private final double bkI = 0.00002;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
-    private final double bkD = 0.011;   // 0.011 for normal and extra wweight, 
+    private final double bkP = 0.037;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
+    private final double bkI = 0.00001;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
+    private final double bkD = 0.01;   // 0.011 for normal and extra wweight, 
     private final double gyroSetpointAngle = 0;
     private final PIDController balancePID;
 

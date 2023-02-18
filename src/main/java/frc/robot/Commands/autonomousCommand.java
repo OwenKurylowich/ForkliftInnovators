@@ -53,9 +53,6 @@ public class autonomousCommand extends CommandBase {
     }
     subsystem.toggleBalancePID(); //toggle balance to set some variables for balance
     while(subsystem.autoBal()){SmartDashboard.putNumber("NavX Pitch",navx.getPitch());} //balance
-    Timer.delay(2);
-    while(subsystem.turnToPoint(startYaw)){} //rotate back to start angle
-    while(subsystem.autoBal()){SmartDashboard.putNumber("NavX Pitch",navx.getPitch());}//balance again
     done = true;
   }
 
