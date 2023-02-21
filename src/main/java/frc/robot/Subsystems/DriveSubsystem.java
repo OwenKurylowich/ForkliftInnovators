@@ -5,6 +5,7 @@
 package frc.robot.Subsystems;
 
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
@@ -53,7 +54,7 @@ public class DriveSubsystem extends SubsystemBase {
     ForkliftOdometry forkliftOdometry;
 
     private boolean BALANCING = false;
-    private final double bkP = 0.037;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
+    private final double bkP = 0.0365;   //0.0325 for no extrsa weight, 0.04 for extra weight, 0.045 with max weight
     private final double bkI = 0.00001;   //0.14 for no extra weight, 0.15 for extra weight,0.018 with max weight
     private final double bkD = 0.01;   // 0.011 for normal and extra wweight, 
     private final double gyroSetpointAngle = 0;
@@ -65,9 +66,9 @@ public class DriveSubsystem extends SubsystemBase {
     private final PIDController turnPID;
     private double turnTime = 0;
 
-    private final double akP = 0.006;
+    private final double akP = 0.1;
     private final double akI = 0.0;
-    private final double akD = 0.04;
+    private final double akD = 0.0;
     private final PIDController autoDrivePID;
     private double calculatedPower = 0;
     private double turnCalc = 0;
@@ -83,17 +84,29 @@ public class DriveSubsystem extends SubsystemBase {
   /** Creates a new Drive. */
   public DriveSubsystem() {
 
-    right.setInverted(true);
+    frontRight.setInverted(true);
+    backRight.setInverted(true);
+    //right.setInverted(true);
     frontRight.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10);
-    frontRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+    frontRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,0,0);
 
     frontLeft.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10);
-    frontLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+    frontLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,0,0);
 
     frontLeft.setNeutralMode(NeutralMode.Coast);
     backLeft.setNeutralMode(NeutralMode.Coast);
     frontRight.setNeutralMode(NeutralMode.Coast);
     backRight.setNeutralMode(NeutralMode.Coast);
+
+    frontLeft.configClosedloopRamp(Constants.encoderPositionPerFoot/1000);
+    frontLeft.config_kP(0, akP);
+    frontLeft.config_kI(0, akI);
+    frontLeft.config_kD(0, akD);
+
+    frontRight.configClosedloopRamp(Constants.encoderPositionPerFoot/1000);
+    frontRight.config_kP(0, akP);
+    frontRight.config_kI(0, akI);
+    frontRight.config_kD(0, akD);
 
     navx.reset();
     navx.resetDisplacement();
@@ -106,6 +119,7 @@ public class DriveSubsystem extends SubsystemBase {
     turnPID.enableContinuousInput(-180, 180);
     autoDrivePID = new PIDController(akP, akI, akD);
     autoDrivePID.setTolerance(350);
+    autoDrivePID.enableContinuousInput(-0.2*Constants.encoderPositionPerFoot, 0.2*Constants.encoderPositionPerFoot);
     odometry = new DifferentialDriveOdometry(navx.getRotation2d(), frontLeft.getSelectedSensorPosition(), frontRight.getSelectedSensorPosition());
         forkliftOdometry = new ForkliftOdometry(Constants.Drive.kTrackwidthMeters,
                 Constants.Drive.kLongitudinalDistance,
@@ -235,28 +249,47 @@ public void toggleBrakeMode(){
 }
 
 public boolean autoDrive(double ft){
-  boolean done = false;
-  autoDrivePID.setSetpoint(ft * Constants.encoderPositionPerFoot);
-  double autoCalc = autoDrivePID.calculate(frontRight.getSelectedSensorPosition(),ft * Constants.encoderPositionPerFoot);
-  drive.tankDrive(-autoCalc,-autoCalc);
-  if(autoDrivePID.atSetpoint()){return false;}
+  frontRight.set(ControlMode.Position, ft*Constants.encoderPositionPerFoot);
+  backRight.follow(frontRight);
+  frontLeft.set(ControlMode.Position, ft*Constants.encoderPositionPerFoot);
+  backLeft.follow(frontLeft);
+
+  // autoDrivePID.setSetpoint(ft * Constants.encoderPositionPerFoot);
+  // double autoCalc = autoDrivePID.calculate(frontRight.getSelectedSensorPosition(),ft * Constants.encoderPositionPerFoot);
+  // drive.tankDrive(-autoCalc,-autoCalc);
+  // if(autoDrivePID.atSetpoint()){return false;}
   return true;
 }
 
 public boolean autoBal(){
+  BALANCING = true;
   calculatedPower = balancePID.calculate(-navx.getPitch(), gyroSetpointAngle);
     drive.tankDrive(calculatedPower, calculatedPower);
     if (navx.getPitch() > -1 && navx.getPitch() < 1){
       balanceTime+=0.02;
       if(balanceTime>=5){
-        BALANCING = false;
-        return false;
+        BALANCING = false;;
       }
     }
     else{
       balanceTime = 0;
     }
-    return true;
+    return BALANCING;
+}
+public boolean autoOffBal(){
+  BALANCING = true;
+  calculatedPower = balancePID.calculate(navx.getPitch(), gyroSetpointAngle);
+    drive.tankDrive(calculatedPower, calculatedPower);
+    if (navx.getPitch() > -1 && navx.getPitch() < 1){
+      balanceTime+=0.02;
+      if(balanceTime>=5){
+        BALANCING = false;;
+      }
+    }
+    else{
+      balanceTime = 0;
+    }
+    return BALANCING;
 }
   public void drive(double leftValue, double rightValue){
     if (!BALANCING) {
