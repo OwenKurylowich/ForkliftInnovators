@@ -249,15 +249,15 @@ public void toggleBrakeMode(){
 }
 
 public boolean autoDrive(double ft){
-  frontRight.set(ControlMode.Position, ft*Constants.encoderPositionPerFoot);
-  backRight.follow(frontRight);
-  frontLeft.set(ControlMode.Position, ft*Constants.encoderPositionPerFoot);
-  backLeft.follow(frontLeft);
+  //frontRight.set(ControlMode.Position, ft*Constants.encoderPositionPerFoot);
+  //backRight.follow(frontRight);
+  //frontLeft.set(ControlMode.Position, ft*Constants.encoderPositionPerFoot);
+  //backLeft.follow(frontLeft);
 
-  // autoDrivePID.setSetpoint(ft * Constants.encoderPositionPerFoot);
-  // double autoCalc = autoDrivePID.calculate(frontRight.getSelectedSensorPosition(),ft * Constants.encoderPositionPerFoot);
-  // drive.tankDrive(-autoCalc,-autoCalc);
-  // if(autoDrivePID.atSetpoint()){return false;}
+  autoDrivePID.setSetpoint(ft * Constants.encoderPositionPerFoot);
+  double autoCalc = autoDrivePID.calculate(frontRight.getSelectedSensorPosition(),ft * Constants.encoderPositionPerFoot);
+  drive.tankDrive(-autoCalc,-autoCalc);
+  if(autoDrivePID.atSetpoint()){return false;}
   return true;
 }
 
