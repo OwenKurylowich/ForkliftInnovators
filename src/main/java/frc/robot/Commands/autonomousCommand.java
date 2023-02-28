@@ -26,7 +26,11 @@ public class autonomousCommand extends CommandBase {
   private boolean lineUp;
   private boolean secondStop;
   private boolean secondDriveRun;
+  private boolean lineUpTwo;
+  private boolean thirdDriveRun;
   private boolean thirdStop;
+  private boolean resetEncoderTwo;
+  private boolean fourthStop;
    
   /** Creates a new autonomousCommand. */
   public autonomousCommand() {
@@ -48,48 +52,73 @@ public class autonomousCommand extends CommandBase {
     lineUp = true;
     secondStop = true;
     secondDriveRun = true;
+    lineUpTwo = true;
+    thirdDriveRun = true;
     thirdStop = true;
-    //Timer.delay(5); //delay to lean charge station in testing
+    resetEncoderTwo = true;
+    fourthStop = true;
+    Timer.delay(5); //delay to lean charge station in testing
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    //if(firstDriveRun){
-      while(subsystem.autoDrive(1)){} //drive 9 feet
-      //firstDriveRun = false;
-    //}
-    
-    // if(resetEncoderOne){subsystem.resetEncoders();}
+    if(firstDriveRun){
+      while(subsystem.autoDrive(8)){} //drive 8 feet
+      firstDriveRun = false;
+    }
+    if(lineUp){
+      subsystem.turnToPointInit();
+      while(subsystem.turnToPoint(startYaw)){}; //line up to point straight again
+      lineUp = false;
+    }
     // if(getOffBal){
     //   while(subsystem.autoOffBal()){} // get level on ground so it is out of community
     //   getOffBal = false;
     // }
-    // if(firstStop){
-    //   subsystem.drive(0.0,0.0); //small pause
-    //   Timer.delay(0.1); 
-    //   firstStop = false;
-    // }
-    // if(lineUp){
-    //   subsystem.turnToPoint(startYaw); //line up to point straight again
-    //   lineUp = false;
-    // }
-    // if(secondStop){
-    //   subsystem.drive(0.0,0.0);
-    //   Timer.delay(0.1); //pause again
-    //   secondStop = false;
-    // }
-    // if(secondDriveRun){
-    //   subsystem.autoDrive(-2.5); //drive back up the charge station
-    //   secondDriveRun = false;
-    // }
-    // if(thirdStop){
-    //   subsystem.drive(-0.05,-0.05);
-    //   Timer.delay(0.1); //pause again
-    //   thirdStop = false;
-    // }
-    // subsystem.toggleBalancePID(); //toggle balance to set some variables for balance
-    // while(subsystem.autoBal()){SmartDashboard.putNumber("NavX Pitch",navx.getPitch());} //balance
+    if(firstStop){
+      subsystem.drive(0.0,0.0); //small pause
+      Timer.delay(0.1); 
+      firstStop = false;
+    }
+    if(resetEncoderOne){
+      subsystem.resetEncoders();
+      resetEncoderOne = false;
+    }
+    if(secondDriveRun){
+      while(subsystem.autoDrive(2)){}; 
+      secondDriveRun = false;
+    }
+    if(secondStop){
+      subsystem.drive(0.0,0.0);
+      Timer.delay(0.1); //pause again
+      secondStop = false;
+    }
+    if(lineUpTwo){
+      subsystem.turnToPointInit();
+      while(subsystem.turnToPoint(startYaw)){}; //line up to point straight again
+      lineUpTwo = false;
+    }
+    if(thirdStop){
+      subsystem.drive(0.0,0.0);
+      Timer.delay(0.3); //pause again
+      thirdStop = false;
+    }
+    if(resetEncoderTwo){
+      subsystem.resetEncoders();
+      resetEncoderTwo = false;
+    }
+    if(thirdDriveRun){
+      while(subsystem.autoDrive(-4)){}; //drive back up the charge station
+      thirdDriveRun = false;
+    }
+    if(fourthStop){
+      subsystem.drive(-0.05,-0.05);
+      Timer.delay(0.1); //pause again
+      fourthStop = false;
+    }
+    subsystem.toggleBalancePID(); //toggle balance to set some variables for balance
+    while(subsystem.autoBal()){SmartDashboard.putNumber("NavX Pitch",navx.getPitch());} //balance
   }
 
   // Called once the command ends or is interrupted.
