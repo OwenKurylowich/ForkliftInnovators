@@ -265,6 +265,7 @@ public boolean autoDrive(double ft){
   autoCalcLeft = autoDriveLeftPID.calculate((frontLeft.getSelectedSensorPosition()*-2),ft * Constants.encoderPositionPerFoot);
   drive.tankDrive(-autoCalcLeft,-autoCalcRight);
   if(autoDriveRightPID.atSetpoint() && autoDriveLeftPID.atSetpoint()){return false;}
+
   return true;
 }
 
