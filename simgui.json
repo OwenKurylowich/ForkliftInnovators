@@ -1,0 +1,16 @@
+{
+  "HALProvider": {
+    "Other Devices": {
+      "Talon SRX[0]": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo"
+    }
+  }
+}
