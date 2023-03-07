@@ -59,8 +59,6 @@ public class autonomousCommand extends CommandBase {
     secondStop = true;
     secondDriveRun = true;
     thirdStop = true;
-    subsystem.setCalculatedPower(1);
-    subsystem.setBalanceTime(12);
     subsystem.toggleBalancePID();
     subsystem.resetEncoders();
      //Timer.delay(1); //delay to lean charge station in testing
@@ -85,8 +83,8 @@ public class autonomousCommand extends CommandBase {
       // subsystem.tankDriveVolts(9, 9);
 
   //}
-   // subsystem.toggleBalancePID();
-   // subsystem.resetEncoders();
+  // subsystem.toggleBalancePID();
+  // subsystem.resetEncoders();
 
   
 // if(initialStop){
@@ -100,12 +98,12 @@ public class autonomousCommand extends CommandBase {
 //   initialStop = false;
 //    }
 
+
 //     if(firstDriveRun){
 //     while(subsystem.autoDrive(6)){} //drive 9 feet//changed from 4 to 6 feet//
 //     subsystem.resetEncoders();
 //       firstDriveRun = false;
 //    }
-    
 //      if(resetEncoderOne){ resetEncoderOne = false;
 //      subsystem.resetEncoders();}
 //     if(getOffBal){
@@ -138,7 +136,7 @@ public class autonomousCommand extends CommandBase {
 //        thirdStop = false;
 //      }
 //      subsystem.toggleBalancePID(); //toggle balance to set some variables for balance
-//      while(subsystem.autoBal()){SmartDashboard.putNumber("NavX Pitch",navx.getPitch());} //balance
+//      while(subsystem.autoBal()){} //balance
 //  }
 }
 
