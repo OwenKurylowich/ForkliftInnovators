@@ -38,6 +38,7 @@ public class autonomousCommand extends CommandBase {
   public autonomousCommand() {
     subsystem = DriveSubsystem.getInstance();
     navx = subsystem.getNavx();
+    addRequirements(subsystem);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -62,7 +63,7 @@ public class autonomousCommand extends CommandBase {
     subsystem.setBalanceTime(12);
     subsystem.toggleBalancePID();
     subsystem.resetEncoders();
-   Timer.delay(1); //delay to lean charge station in testing
+     //Timer.delay(1); //delay to lean charge station in testing
   }
 
    //Called every time the scheduler runs while the command is scheduled.
@@ -143,7 +144,9 @@ public class autonomousCommand extends CommandBase {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    subsystem.drive(0, 0);
+  }
 
   // Returns true when the command should end.
   @Override

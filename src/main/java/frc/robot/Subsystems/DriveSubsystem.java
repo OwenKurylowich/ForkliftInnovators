@@ -68,7 +68,7 @@ public class DriveSubsystem extends SubsystemBase {
     private double turnTime = 0;
 
     //private final double akP = 0.0000375;
-    private final double akP = 0.00000175;
+    private final double akP = 0.0000275;
     private final double akI = 0.0;
     private final double akD = 0.000;//changed from 0.001 to 0.001//
     private final PIDController autoDriveRightPID;
@@ -282,7 +282,9 @@ public boolean autoDrive(double ft){
   autoDriveLeftPID.setSetpoint(ft * Constants.encoderPositionPerFoot);
   autoCalcRight = autoDriveRightPID.calculate(frontRight.getSelectedSensorPosition(),ft * Constants.encoderPositionPerFoot);
   autoCalcLeft = autoDriveLeftPID.calculate((frontLeft.getSelectedSensorPosition()*-1),ft * Constants.encoderPositionPerFoot);
+  SmartDashboard.putNumber("autoCalcLeft", autoCalcLeft);
   drive.tankDrive(-autoCalcLeft,-autoCalcRight);
+  drive.feed();
   if(autoDriveRightPID.atSetpoint() && autoDriveLeftPID.atSetpoint())
   {
       return true;

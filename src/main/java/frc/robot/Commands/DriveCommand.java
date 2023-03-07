@@ -20,7 +20,7 @@ public class DriveCommand extends CommandBase {
         this.rightJoystick = rightJoystick;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(subsystem);
-        subsystem.setDefaultCommand(this);
+    subsystem.setDefaultCommand(this);
   }
 
   // Called when the command is initially scheduled.
