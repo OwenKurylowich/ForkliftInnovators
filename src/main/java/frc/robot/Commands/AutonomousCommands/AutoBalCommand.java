@@ -5,10 +5,15 @@
 package frc.robot.Commands.AutonomousCommands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.Subsystems.DriveSubsystem;
 
 public class AutoBalCommand extends CommandBase {
+  DriveSubsystem subsystem;
   /** Creates a new AutoBalCommand. */
   public AutoBalCommand() {
+    subsystem = DriveSubsystem.getInstance();
+    addRequirements();
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -22,11 +27,14 @@ public class AutoBalCommand extends CommandBase {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    subsystem.brakeMode(true);
+    subsystem.drive(0, 0);
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return subsystem.autoBal();
   }
 }
